@@ -1,5 +1,6 @@
 import React from 'react'
 import Spline from '@splinetool/react-spline'
+import FondoAnimado from './FondoAnimado'
 
 const Hero = () => {
   return (
@@ -8,11 +9,12 @@ const Hero = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#000000',
       position: 'relative',
       overflow: 'hidden',
       padding: '4rem 0'
     }}>
+      <FondoAnimado />
+      
       {/* Iluminación naranja difuminada superior */}
       <div style={{
         position: 'absolute',
