@@ -47,16 +47,24 @@ const Hero = () => {
               position: 'relative'
             }}>
               {/* Imagen para móvil */}
-              <img 
-                src="/assets/Elon.png" 
-                alt="Elon" 
-                className="img-fluid d-md-none"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover'
-                }}
-              />
+              <div className="d-md-none" style={{ 
+                width: '100%', 
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <img 
+                  src="/assets/Elon.png" 
+                  alt="Elon" 
+                  style={{
+                    width: 'auto',
+                    height: '100%',
+                    maxWidth: '100%',
+                    objectFit: 'contain'
+                  }}
+                />
+              </div>
               {/* Spline para pantallas medianas y grandes */}
               <div className="d-none d-md-block" style={{ width: '100%', height: '100%', position: 'relative' }}>
                 <Spline 
