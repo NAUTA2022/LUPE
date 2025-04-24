@@ -1,5 +1,5 @@
 import React from 'react'
-import { ConnectWallet } from '@thirdweb-dev/react'
+
 
 const Navbar = () => {
   return (
@@ -10,7 +10,7 @@ const Navbar = () => {
           ElonMoon
         </a>
         <div className="ms-auto">
-          <ConnectWallet />
+       
         </div>
       </div>
     </nav>

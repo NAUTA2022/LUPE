@@ -13,10 +13,12 @@
     "@splinetool/react-spline": "^4.0.0",
     "@splinetool/runtime": "^1.9.82",
     "@thirdweb-dev/react": "^4.9.4",
-    "@thirdweb-dev/sdk": "^4.0.99",
     "bootstrap": "^5.3.5",
+    "ethers": "^6.13.5",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-toastify": "^11.0.5",
+    "thirdweb": "^5.96.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",

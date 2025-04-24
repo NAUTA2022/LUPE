@@ -27,6 +27,12 @@ function App() {
         }}>
           <Hero />
         </main>
+        <p className="text-white-20" style={{ fontSize: '1.1rem' }}>
+              Disclaimer
+              Elmoon.io es una memecoin creada como homenaje paródico al estilo de Elon Musk.
+              No está afiliada a Elon Musk, SpaceX, Tesla ni a ninguna entidad relacionada.
+              $ELMO es un token descentralizado sin valor garantizado. Participar implica asumir los riesgos del mercado cripto.  crées que podemos añadir este disclaimer en el pié de página de la landing?
+            </p>
       </div>
     </div>
   )
