@@ -438,6 +438,26 @@ const Hero = () => {
 
               {address ?
                 <>
+                  <ConnectButton
+                  client={client}
+                  // accountAbstraction={{
+                  //   chain: polygon,
+                  //   sponsorGas: true,
+                  // }}
+                  {...connectButtonOptions}
+
+                  connectButton={{ label: "Connect Wallet" }}
+                  locale={"es_ES"}
+                  theme={lightTheme({
+                    colors: {
+                      primaryButtonBg: "green",
+                      primaryButtonText: "Connect Wallet",
+                    },
+                    fontFamily: "'Orbitron', sans-serif"
+                  })}
+
+
+                />
 
                   <input
                     onChange={(e) => {
