@@ -6,7 +6,7 @@ const Navbar = () => {
     <nav className="navbar navbar-expand-lg fixed-top bg-transparent">
       <div className="container-fluid px-4">
         <a className="navbar-brand text-white d-flex align-items-center gap-2" href="#">
-          {/* <img src="assets/Logo.png" alt="Logo" width="30" height="30" className="d-inline-block align-text-top" /> */}
+          <img src="assets/Logo.png" alt="Logo" width="30" height="30" className="d-inline-block align-text-top" />
           ElonMoon
         </a>
         <div className="ms-auto">
