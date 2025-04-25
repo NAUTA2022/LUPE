@@ -278,6 +278,18 @@ const Hero = () => {
       theme: "light",
     });
   };
+  const copyCode = () => {
+    toast.success('Referral code copy succes', {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
   const errorTx = () => {
     toast.warn('Error, please contact support.', {
       position: "top-right",
@@ -410,17 +422,17 @@ const Hero = () => {
                 fontFamily: "'Orbitron', sans-serif"
               }}
             >
-                    $ELMO is not just another memecoin.
-            It burns 90% of its supply and is aiming for $0.000416.
-            Only 20,000 pioneers will be part of this Airdrop.
-            <br /><br />
+              $ELMO is not just another memecoin.
+              It burns 90% of its supply and is aiming for $0.000416.
+              Only 20,000 pioneers will be part of this Airdrop.
+              <br /><br />
 
-            🚀 Invest from $0.00001 and receive +20% extra.
-            Every dollar you invest burns tokens, triggers raffles, and gives you a voice in the DAO.
-            <br /><br />
+              🚀 Invest from $0.00001 and receive +20% extra.
+              Every dollar you invest burns tokens, triggers raffles, and gives you a voice in the DAO.
+              <br /><br />
 
-            💥 What if $100 turns into $4,992?
-            We’re firing up the engines — but without you, we won’t take off.
+              💥 What if $100 turns into $4,992?
+              We’re firing up the engines — but without you, we won’t take off.
             </p>
             <div className="d-flex gap-3 mb-4">
 
@@ -480,7 +492,9 @@ const Hero = () => {
 
 
                 />}
+
             </div>
+
             <p
               className="lead mb-4 text-white"
               style={{
@@ -488,7 +502,7 @@ const Hero = () => {
                 fontFamily: "'Orbitron', sans-serif"
               }}
             >
-             Total tokens sold:
+              Total tokens sold:
               {tokenSold} $ELMO
               <br />
               Total USDT paid in referrals:
@@ -530,12 +544,40 @@ const Hero = () => {
 
             </p>
 
-            {address ? <button
-              onClick={() => setShowDashboard(true)}
-              style={{
-                fontSize: '1rem',
-                fontFamily: "'Orbitron', sans-serif"
-              }} className="btn btn-outline-light btn-lg">Personal Dashboard </button> : <></>}
+            {address ? <>
+
+              <button
+                onClick={() => setShowDashboard(true)}
+                style={{
+                  fontSize: '1rem',
+                  fontFamily: "'Orbitron', sans-serif"
+                }} className="btn btn-outline-light btn-lg">Personal Dashboard </button>
+
+                <button
+                  onClick={() => {
+                    const referralLink = `${window.location.origin}/?referral=${address.address}`;
+                    navigator.clipboard.writeText(referralLink)
+                      .then(() => {
+                        copyCode();
+                      })  
+                      .catch(err => {
+                        console.error("Failed to copy: ", err);
+                      });
+                  }}
+                  style={{
+                    fontSize: '1rem',
+                    fontFamily: "'Orbitron', sans-serif",
+                    minWidth: '130px',
+                  }}
+                  className="btn btn-outline-light btn-lg"
+                >
+                  Copy referral link
+                </button>
+
+            </>
+
+
+              : <></>}
 
             {showDashboard && (
               <div style={{
@@ -580,13 +622,13 @@ const Hero = () => {
 
                   </p>
                   <p>
-                  Total Invested
+                    Total Invested
                     <span style={{ color: "green", fontWeight: "bold" }}> (with 20% extra) </span>:
                     ${(Number(String(totalInvested).replace(/,/g, "")) * 1.2).toFixed(2)}
                   </p>
                   <p>Total tokens purchased: {totalTokenBuyedWithoutBonus} $ELMO</p>
                   <p>
-                  Total tokens purchased
+                    Total tokens purchased
                     <span style={{ color: "green", fontWeight: "bold" }}> (with 20% extra) </span>:
                     ${totalTokenBuyed} $ELMO
                   </p>
@@ -595,16 +637,16 @@ const Hero = () => {
                   </p>
 
                   <hr />
-                  <p>Total USDTs received at your level 1 (8%): ${userAmountUsdtPerLevel1}</p>
-                  <p>Total USDTs received at your level 2 (4%): ${userAmountUsdtPerLevel2}</p>
-                  <p>Total USDTs received at your level 3 (2%): ${userAmountUsdtPerLevel3}</p>
-                  <p>Total USDTs received at your level 4 (1%): ${userAmountUsdtPerLevel4}</p>
-                  <p>Total USDTs received at your level 5 (1%): ${userAmountUsdtPerLevel5}</p>
-                  <p>Total USDTs received at your level 6 (1%): ${userAmountUsdtPerLevel6}</p>
-                  <p>Total USDTs received at your level 7 (1%): ${userAmountUsdtPerLevel7}</p>
-                  <p>Total USDTs received at your level 8 (1%): ${userAmountUsdtPerLevel8}</p>
-                  <p>Total USDTs received at your level 9 (0.50%): ${userAmountUsdtPerLevel9}</p>
-                  <p>Total USDTs received at your level 10 (0.50%): ${userAmountUsdtPerLevel10}</p>
+                  <p>Total USDTs received at your level 1 (8%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel1, 6)).toLocaleString()}</p>
+                  <p>Total USDTs received at your level 2 (4%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel2, 6)).toLocaleString()}</p>
+                  <p>Total USDTs received at your level 3 (2%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel3, 6)).toLocaleString()}</p>
+                  <p>Total USDTs received at your level 4 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel4, 6)).toLocaleString()}</p>
+                  <p>Total USDTs received at your level 5 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel5, 6)).toLocaleString()}</p>
+                  <p>Total USDTs received at your level 6 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel6, 6)).toLocaleString()}</p>
+                  <p>Total USDTs received at your level 7 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel7, 6)).toLocaleString()}</p>
+                  <p>Total USDTs received at your level 8 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel8, 6)).toLocaleString()}</p>
+                  <p>Total USDTs received at your level 9 (0.50%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel9, 6)).toLocaleString()}</p>
+                  <p>Total USDTs received at your level 10 (0.50%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel10, 6)).toLocaleString()}</p>
 
 
 
