@@ -59,6 +59,11 @@ const Hero = () => {
   const address = useActiveAccount();
   const chain = defineChain(137);
   const userWallet = address?.address;
+
+  const gobalParams = new URLSearchParams(window.location.search);
+  const globalRreferral = gobalParams.get("referral");
+  console.log("Referral:", globalRreferral);
+
   console.log(userWallet)
 
   const { data: referrerOf } = useReadContract({
@@ -66,6 +71,14 @@ const Hero = () => {
     method: "referrerOf",
     params: [userWallet],
   });
+
+  const { data: sponsorUsdtSpent } = useReadContract({
+    contract: ICO,
+    method: "userUsdtSpent",
+    params: [globalRreferral],
+  });
+
+  console.log(sponsorUsdtSpent)
 
   const { data: userUsdtSpent } = useReadContract({
     contract: ICO,
@@ -159,27 +172,27 @@ const Hero = () => {
   });
 
 
-  const tokenSold = totalTokensSold
+  const tokenSold = totalTokensSold !== undefined  && totalTokensSold !== null
     ? Number(ethers.formatUnits(totalTokensSold, 18)).toLocaleString()
     : "Loading...";
 
-  const usdtRaised = totalUsdtRaised
+  const usdtRaised = totalUsdtRaised  !== undefined  &&  totalUsdtRaised !== null
     ? Number(ethers.formatUnits(totalUsdtRaised, 6)).toLocaleString()
     : "Loading...";
 
-  const totalPayedSponsors = totalUsdtPaidToSponsors
+  const totalPayedSponsors = totalUsdtPaidToSponsors !== undefined && totalUsdtPaidToSponsors !== null
     ? Number(ethers.formatUnits(totalUsdtPaidToSponsors, 6)).toLocaleString()
     : "Loading...";
 
-  const totalInvested = userUsdtSpent
+  const totalInvested = userUsdtSpent !== undefined && userUsdtSpent !== null
     ? Number(ethers.formatUnits(userUsdtSpent, 6)).toLocaleString()
     : "Loading...";
 
-  const totalTokenBuyed = userTokensPurchased
+  const totalTokenBuyed = userTokensPurchased !== undefined && userTokensPurchased !== null
     ? Number(ethers.formatUnits(userTokensPurchased, 18)).toLocaleString()
     : "Loading...";
 
-  const totalTokenBuyedWithoutBonus = userTokensPurchasedWithoutBonus
+  const totalTokenBuyedWithoutBonus = userTokensPurchasedWithoutBonus !== undefined && userTokensPurchasedWithoutBonus !== null
     ? Number(ethers.formatUnits(userTokensPurchasedWithoutBonus, 18)).toLocaleString()
     : "Loading...";
 
@@ -193,6 +206,11 @@ const Hero = () => {
       amountTx()
       return;
     }
+
+    if (amount < 50) {
+      minInvestTx()
+      return;
+    }
     const params = new URLSearchParams(window.location.search);
     const referral = params.get("referral");
     console.log("Referral:", referral);
@@ -203,15 +221,25 @@ const Hero = () => {
       console.log(address)
 
       if (address == undefined) {
-        throw new Error("User address not found.");
+        //throw new Error("User address not found.");
+        return
       }
 
       if (referrerOf == "0x0000000000000000000000000000000000000000") { //Si no tiene referido
         if (referral == undefined) { //Si no tiene referido puesto en el link
           sponsorTx()
-          throw new Error("This is your first purchase, you must have a referrer.");
+          //throw new Error("This is your first purchase, you must have a referrer.");
+          return
         }
       }
+
+      console.log(BigInt(Number(50)* 1_000_000))
+
+      // if (sponsorUsdtSpent < BigInt(Number(50)* 1_000_000)) { 
+      //     needInvestTx()
+      //    // throw new Error("This is your first purchase, you must have a referrer.");
+      //    return
+      // }
 
 
       const approvalUsdt = prepareContractCall({
@@ -316,8 +344,34 @@ const Hero = () => {
     });
   };
 
+  const minInvestTx = () => {
+    toast.info('The minimum investment is 50 USD', {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
+
   const sponsorTx = () => {
     toast.info('Its your first purchase, you must add a sponsor to your link', {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
+
+  const needInvestTx = () => {
+    toast.info('Your sponsor never invested', {
       position: "top-right",
       autoClose: 5000,
       hideProgressBar: false,
@@ -414,7 +468,7 @@ const Hero = () => {
             </div>
           </div>
           <div className="col-md-6 col-lg-5 bg-transparent order-md-1">
-            <h1 className="display-3 fw-bold mb-4 text-white">ELON NEEDS YOU 🚀</h1>
+            <h1 className="display-3 fw-bold mb-4 text-white">ELON NEEDS YOU </h1>
             <p
               className="lead mb-4 text-white"
               style={{
@@ -434,30 +488,33 @@ const Hero = () => {
               💥 What if $100 turns into $4,992?
               We’re firing up the engines — but without you, we won’t take off.
             </p>
+            <ConnectButton
+                    client={client}
+                    // accountAbstraction={{
+                    //   chain: polygon,
+                    //   sponsorGas: true,
+                    // }}
+                    {...connectButtonOptions}
+
+                    connectButton={{ label: "Connect Wallet" }}
+                    locale={"es_ES"}
+                    theme={lightTheme({
+                      colors: {
+                        primaryButtonBg: "green",
+                        primaryButtonText: "Connect Wallet",
+                      },
+                      fontFamily: "'Orbitron', sans-serif"
+                    })}
+
+
+                  />
+                  <br />
+                  <br />
             <div className="d-flex gap-3 mb-4">
 
               {address ?
                 <>
-                  <ConnectButton
-                  client={client}
-                  // accountAbstraction={{
-                  //   chain: polygon,
-                  //   sponsorGas: true,
-                  // }}
-                  {...connectButtonOptions}
-
-                  connectButton={{ label: "Connect Wallet" }}
-                  locale={"es_ES"}
-                  theme={lightTheme({
-                    colors: {
-                      primaryButtonBg: "green",
-                      primaryButtonText: "Connect Wallet",
-                    },
-                    fontFamily: "'Orbitron', sans-serif"
-                  })}
-
-
-                />
+                 
 
                   <input
                     onChange={(e) => {
@@ -491,27 +548,28 @@ const Hero = () => {
                 </>
                 :
 
+                    <></>
+                // <ConnectButton
+                //   client={client}
+                //   // accountAbstraction={{
+                //   //   chain: polygon,
+                //   //   sponsorGas: true,
+                //   // }}
+                //   {...connectButtonOptions}
 
-                <ConnectButton
-                  client={client}
-                  // accountAbstraction={{
-                  //   chain: polygon,
-                  //   sponsorGas: true,
-                  // }}
-                  {...connectButtonOptions}
-
-                  connectButton={{ label: "Connect Wallet" }}
-                  locale={"es_ES"}
-                  theme={lightTheme({
-                    colors: {
-                      primaryButtonBg: "green",
-                      primaryButtonText: "Connect Wallet",
-                    },
-                    fontFamily: "'Orbitron', sans-serif"
-                  })}
+                //   connectButton={{ label: "Connect Wallet" }}
+                //   locale={"es_ES"}
+                //   theme={lightTheme({
+                //     colors: {
+                //       primaryButtonBg: "green",
+                //       primaryButtonText: "Connect Wallet",
+                //     },
+                //     fontFamily: "'Orbitron', sans-serif"
+                //   })}
 
 
-                />}
+                // />
+                }
 
             </div>
 
@@ -573,31 +631,50 @@ const Hero = () => {
                   fontFamily: "'Orbitron', sans-serif"
                 }} className="btn btn-outline-light btn-lg">Personal Dashboard </button>
 
-                <button
-                  onClick={() => {
-                    const referralLink = `${window.location.origin}/?referral=${address.address}`;
-                    navigator.clipboard.writeText(referralLink)
-                      .then(() => {
-                        copyCode();
-                      })  
-                      .catch(err => {
-                        console.error("Failed to copy: ", err);
-                      });
-                  }}
-                  style={{
-                    fontSize: '1rem',
-                    fontFamily: "'Orbitron', sans-serif",
-                    minWidth: '130px',
-                  }}
-                  className="btn btn-outline-light btn-lg"
-                >
-                  Copy referral link
-                </button>
+              <button
+                onClick={() => {
+                  const referralLink = `${window.location.origin}/?referral=${address.address}`;
+                  navigator.clipboard.writeText(referralLink)
+                    .then(() => {
+                      copyCode();
+                    })
+                    .catch(err => {
+                      console.error("Failed to copy: ", err);
+                    });
+                }}
+                style={{
+                  fontSize: '1rem',
+                  fontFamily: "'Orbitron', sans-serif",
+                  minWidth: '130px',
+                }}
+                className="btn btn-outline-light btn-lg"
+              >
+                Copy referral link
+              </button>
 
             </>
 
 
               : <></>}
+            <br />
+            <br />
+            <br />
+            <a
+              href="https://chatgpt.com/g/g-68083ff0f5408191af9e9138ca2135c8-elonbot-mooncommander"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <button
+                style={{
+                  fontSize: '1rem',
+                  fontFamily: "'Orbitron', sans-serif",
+                  minWidth: '130px',
+                }}
+                className="btn btn-outline-light btn-lg"
+              >
+                Questions? Talk with Elon
+              </button>
+            </a>
 
             {showDashboard && (
               <div style={{
@@ -619,7 +696,9 @@ const Hero = () => {
                   width: '90%',
                   textAlign: 'center',
                   position: 'relative',
-                  fontFamily: "'Orbitron', sans-serif"
+                  fontFamily: "'Orbitron', sans-serif",
+                  maxHeight: '80vh',            // 👈 limita la altura
+                  overflowY: 'auto'             // 👈 activa scroll vertical si se necesita,
                 }}>
                   <button
                     onClick={() => setShowDashboard(false)}
@@ -652,8 +731,10 @@ const Hero = () => {
                     <span style={{ color: "green", fontWeight: "bold" }}> (with 20% extra) </span>:
                     ${totalTokenBuyed} $ELMO
                   </p>
+                  {console.log(totalTokenBuyed)}
                   <p>
-                    🌕 Upon reaching the moon ($0.000416), your $ELMO cost <span style={{ color: "green", fontWeight: "bold" }}> ${Number(String(totalTokenBuyed).replace(/,/g, "")) * 0.000416}</span>
+
+                    🌕 Upon reaching the moon ($0.000416), your $ELMO cost  <span style={{ color: "green", fontWeight: "bold" }}> ${Number(ethers.formatUnits(userTokensPurchased, 18)) * 0.000416}</span>
                   </p>
 
                   <hr />
