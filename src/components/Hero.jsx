@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Spline from '@splinetool/react-spline'
 import FondoAnimado from './FondoAnimado'
 import { ethers } from "ethers";
@@ -9,6 +9,7 @@ import { client } from "../client";
 import { ICO, IcoAddress, USDT } from '../contracts';
 import { prepareContractCall, sendTransaction, waitForReceipt } from 'thirdweb';
 import { ToastContainer, toast } from 'react-toastify';
+import { icoABI } from '../abis/ico';
 
 const wallets = [
   inAppWallet({
@@ -55,6 +56,10 @@ const Hero = () => {
   const [usdtAmount, setUsdtAmount] = useState(0);
   const [isProcessing, setIsProcessing] = useState(0);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [expandedLevel, setExpandedLevel] = useState(null);
+  const [referralsData, setReferralsData] = useState([]);
+  const [loadingReferrals, setLoadingReferrals] = useState(false);
+
 
   const address = useActiveAccount();
   const chain = defineChain(137);
@@ -71,6 +76,10 @@ const Hero = () => {
     method: "referrerOf",
     params: [userWallet],
   });
+
+
+
+
 
   const { data: sponsorUsdtSpent } = useReadContract({
     contract: ICO,
@@ -103,52 +112,132 @@ const Hero = () => {
     method: "userAmountUsdtPerLevel",
     params: [userWallet, 0],
   });
+
+  const { data: getUserReferralCountPerLevel1 } = useReadContract({
+    contract: ICO,
+    method: "getUserReferralCountPerLevel",
+    params: [userWallet, 0],
+  });
+
+
   const { data: userAmountUsdtPerLevel2 } = useReadContract({
     contract: ICO,
     method: "userAmountUsdtPerLevel",
     params: [userWallet, 1],
   });
+
+  const { data: getUserReferralCountPerLevel2 } = useReadContract({
+    contract: ICO,
+    method: "getUserReferralCountPerLevel",
+    params: [userWallet, 1],
+  });
+
+
   const { data: userAmountUsdtPerLevel3 } = useReadContract({
     contract: ICO,
     method: "userAmountUsdtPerLevel",
     params: [userWallet, 2],
   });
+
+  const { data: getUserReferralCountPerLevel3 } = useReadContract({
+    contract: ICO,
+    method: "getUserReferralCountPerLevel",
+    params: [userWallet, 2],
+  });
+
+
   const { data: userAmountUsdtPerLevel4 } = useReadContract({
     contract: ICO,
     method: "userAmountUsdtPerLevel",
     params: [userWallet, 3],
   });
+
+  const { data: getUserReferralCountPerLevel4 } = useReadContract({
+    contract: ICO,
+    method: "getUserReferralCountPerLevel",
+    params: [userWallet, 3],
+  });
+
+
+
   const { data: userAmountUsdtPerLevel5 } = useReadContract({
     contract: ICO,
     method: "userAmountUsdtPerLevel",
     params: [userWallet, 4],
   });
+
+  const { data: getUserReferralCountPerLevel5 } = useReadContract({
+    contract: ICO,
+    method: "getUserReferralCountPerLevel",
+    params: [userWallet, 4],
+  });
+
+
+
   const { data: userAmountUsdtPerLevel6 } = useReadContract({
     contract: ICO,
     method: "userAmountUsdtPerLevel",
     params: [userWallet, 5],
   });
+
+  const { data: getUserReferralCountPerLevel6 } = useReadContract({
+    contract: ICO,
+    method: "getUserReferralCountPerLevel",
+    params: [userWallet, 5],
+  });
+
+
+
   const { data: userAmountUsdtPerLevel7 } = useReadContract({
     contract: ICO,
     method: "userAmountUsdtPerLevel",
     params: [userWallet, 6],
   });
+
+  const { data: getUserReferralCountPerLevel7 } = useReadContract({
+    contract: ICO,
+    method: "getUserReferralCountPerLevel",
+    params: [userWallet, 6],
+  });
+
+
   const { data: userAmountUsdtPerLevel8 } = useReadContract({
     contract: ICO,
     method: "userAmountUsdtPerLevel",
     params: [userWallet, 7],
   });
+
+  const { data: getUserReferralCountPerLevel8 } = useReadContract({
+    contract: ICO,
+    method: "getUserReferralCountPerLevel",
+    params: [userWallet, 7],
+  });
+
+
   const { data: userAmountUsdtPerLevel9 } = useReadContract({
     contract: ICO,
     method: "userAmountUsdtPerLevel",
     params: [userWallet, 8],
   });
+
+  const { data: getUserReferralCountPerLevel9 } = useReadContract({
+    contract: ICO,
+    method: "getUserReferralCountPerLevel",
+    params: [userWallet, 8],
+  });
+
+
   const { data: userAmountUsdtPerLevel10 } = useReadContract({
     contract: ICO,
     method: "userAmountUsdtPerLevel",
     params: [userWallet, 9],
   });
 
+  const { data: getUserReferralCountPerLevel10 } = useReadContract({
+    contract: ICO,
+    method: "getUserReferralCountPerLevel",
+    params: [userWallet, 9],
+  });
 
 
 
@@ -172,11 +261,11 @@ const Hero = () => {
   });
 
 
-  const tokenSold = totalTokensSold !== undefined  && totalTokensSold !== null
+  const tokenSold = totalTokensSold !== undefined && totalTokensSold !== null
     ? Number(ethers.formatUnits(totalTokensSold, 18)).toLocaleString()
     : "Loading...";
 
-  const usdtRaised = totalUsdtRaised  !== undefined  &&  totalUsdtRaised !== null
+  const usdtRaised = totalUsdtRaised !== undefined && totalUsdtRaised !== null
     ? Number(ethers.formatUnits(totalUsdtRaised, 6)).toLocaleString()
     : "Loading...";
 
@@ -233,7 +322,7 @@ const Hero = () => {
         }
       }
 
-      console.log(BigInt(Number(50)* 1_000_000))
+      console.log(BigInt(Number(50) * 1_000_000))
 
       // if (sponsorUsdtSpent < BigInt(Number(50)* 1_000_000)) { 
       //     needInvestTx()
@@ -241,12 +330,16 @@ const Hero = () => {
       //    return
       // }
 
+      const estimatedGasLimit = BigInt(50000); // puedes ajustar esto tras estimar gas real
+      const targetGasCost = BigInt(0.20 * 1e18); // 0.20 POLS en wei
+      const gasPrice = targetGasCost / estimatedGasLimit;
+      console.log(gasPrice)
 
       const approvalUsdt = prepareContractCall({
         contract: USDT,
         method: "approve",
         params: [IcoAddress, BigInt(Math.floor(Number(amount) * 1_000_000))],
-        //gasPrice: doubledGasPrice.toBigInt(),
+        gasPrice: gasPrice,
       });
 
       const { transactionHash: approveHashUsdt } = await sendTransaction({
@@ -266,7 +359,7 @@ const Hero = () => {
         contract: ICO,
         method: "buyTokens",
         params: [BigInt(Math.floor(Number(amount) * 1_000_000)), referral == undefined ? "0x0000000000000000000000000000000000000001" : referral],
-        //gasPrice: doubledGasPrice.toBigInt(),
+        gasPrice: gasPrice,
       });
 
       const { transactionHash: buyHash } = await sendTransaction({
@@ -287,6 +380,7 @@ const Hero = () => {
 
     } catch (error) {
       console.error("Error:", error);
+      alert(error.message)
       errorTx()
     } finally {
       setIsProcessing(false); // Ocultar pantalla gris
@@ -382,6 +476,48 @@ const Hero = () => {
       theme: "light",
     });
   };
+
+
+
+  const loadReferralsData = async (level) => {
+    try {
+      setLoadingReferrals(true);
+      const provider = new ethers.JsonRpcProvider("https://polygon-rpc.com/");
+  
+      const contract = new ethers.Contract(IcoAddress, icoABI, provider);
+  
+      const referralsRaw = await contract.getUserReferralsPerLevel(userWallet, level);
+      const referrals = Array.from(referralsRaw);
+  
+      if (referrals.length === 0) {
+        setReferralsData([]);
+        setLoadingReferrals(false);
+        return;
+      }
+  
+      const amountsRaw = await contract.getUserLevelReferralAmounts(userWallet, level, referrals);
+      const amounts = Array.from(amountsRaw);
+  
+      const referralDetails = referrals.map((refWallet, i) => ({
+        wallet: refWallet,
+        amount: Number(ethers.formatUnits(amounts[i], 6)),
+      }));
+  
+      setReferralsData(referralDetails);
+      setLoadingReferrals(false);
+    } catch (error) {
+      console.error("Error loading referrals:", error);
+      setLoadingReferrals(false);
+    }
+  };
+  
+
+  useEffect(() => {
+    if (expandedLevel !== null) {
+      loadReferralsData(expandedLevel);
+    }
+  }, [expandedLevel]);
+
 
   return (
     <div style={{
@@ -489,32 +625,32 @@ const Hero = () => {
               We’re firing up the engines — but without you, we won’t take off.
             </p>
             <ConnectButton
-                    client={client}
-                    // accountAbstraction={{
-                    //   chain: polygon,
-                    //   sponsorGas: true,
-                    // }}
-                    {...connectButtonOptions}
+              client={client}
+              // accountAbstraction={{
+              //   chain: polygon,
+              //   sponsorGas: true,
+              // }}
+              {...connectButtonOptions}
 
-                    connectButton={{ label: "Connect Wallet" }}
-                    locale={"es_ES"}
-                    theme={lightTheme({
-                      colors: {
-                        primaryButtonBg: "green",
-                        primaryButtonText: "Connect Wallet",
-                      },
-                      fontFamily: "'Orbitron', sans-serif"
-                    })}
+              connectButton={{ label: "Connect Wallet" }}
+              locale={"es_ES"}
+              theme={lightTheme({
+                colors: {
+                  primaryButtonBg: "green",
+                  primaryButtonText: "Connect Wallet",
+                },
+                fontFamily: "'Orbitron', sans-serif"
+              })}
 
 
-                  />
-                  <br />
-                  <br />
+            />
+            <br />
+            <br />
             <div className="d-flex gap-3 mb-4">
 
               {address ?
                 <>
-                 
+
 
                   <input
                     onChange={(e) => {
@@ -548,7 +684,7 @@ const Hero = () => {
                 </>
                 :
 
-                    <></>
+                <></>
                 // <ConnectButton
                 //   client={client}
                 //   // accountAbstraction={{
@@ -569,7 +705,7 @@ const Hero = () => {
 
 
                 // />
-                }
+              }
 
             </div>
 
@@ -676,6 +812,9 @@ const Hero = () => {
               </button>
             </a>
 
+
+
+
             {showDashboard && (
               <div style={{
                 position: 'fixed',
@@ -700,58 +839,142 @@ const Hero = () => {
                   maxHeight: '80vh',            // 👈 limita la altura
                   overflowY: 'auto'             // 👈 activa scroll vertical si se necesita,
                 }}>
-                  <button
-                    onClick={() => setShowDashboard(false)}
-                    style={{
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px',
-                      background: 'transparent',
-                      border: 'none',
-                      fontSize: '1.5rem',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    ✖️
-                  </button>
-                  <br />
-                  <h2>Your Personal Dashboard</h2>
-                  <p>Total Invested: ${totalInvested} <br></br>
-                    {Number(String(totalInvested).replace(/,/g, "")) >= 1000 ? <>You are part of the DAO</> : <> 🚀 You are missing <span style={{ color: "green" }}>{1000 - Number(String(totalInvested).replace(/,/g, ""))}</span> USDTs to activate your voting power in the DAO </>}
-
-                  </p>
-                  <p>
-                    Total Invested
-                    <span style={{ color: "green", fontWeight: "bold" }}> (with 20% extra) </span>:
-                    ${(Number(String(totalInvested).replace(/,/g, "")) * 1.2).toFixed(2)}
-                  </p>
-                  <p>Total tokens purchased: {totalTokenBuyedWithoutBonus} $ELMO</p>
-                  <p>
-                    Total tokens purchased
-                    <span style={{ color: "green", fontWeight: "bold" }}> (with 20% extra) </span>:
-                    ${totalTokenBuyed} $ELMO
-                  </p>
-                  {console.log(totalTokenBuyed)}
-                  <p>
-
-                    🌕 Upon reaching the moon ($0.000416), your $ELMO cost  <span style={{ color: "green", fontWeight: "bold" }}> ${Number(ethers.formatUnits(userTokensPurchased, 18)) * 0.000416}</span>
-                  </p>
-
-                  <hr />
-                  <p>Total USDTs received at your level 1 (8%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel1, 6)).toLocaleString()}</p>
-                  <p>Total USDTs received at your level 2 (4%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel2, 6)).toLocaleString()}</p>
-                  <p>Total USDTs received at your level 3 (2%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel3, 6)).toLocaleString()}</p>
-                  <p>Total USDTs received at your level 4 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel4, 6)).toLocaleString()}</p>
-                  <p>Total USDTs received at your level 5 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel5, 6)).toLocaleString()}</p>
-                  <p>Total USDTs received at your level 6 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel6, 6)).toLocaleString()}</p>
-                  <p>Total USDTs received at your level 7 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel7, 6)).toLocaleString()}</p>
-                  <p>Total USDTs received at your level 8 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel8, 6)).toLocaleString()}</p>
-                  <p>Total USDTs received at your level 9 (0.50%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel9, 6)).toLocaleString()}</p>
-                  <p>Total USDTs received at your level 10 (0.50%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel10, 6)).toLocaleString()}</p>
 
 
 
 
+
+                  {expandedLevel !== null ? (
+                    // Vista expandida
+                    <>
+                      <button
+                        onClick={() => setExpandedLevel(null)}
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          background: 'transparent',
+                          border: 'none',
+                          fontSize: '1.5rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        🔙
+                      </button>
+                      <h2>Level {expandedLevel + 1} Details</h2>
+                      {expandedLevel !== null && (
+                        <p><strong>Total USDT received:</strong> {
+                          Number(ethers.formatUnits(
+                            expandedLevel === 0 ? userAmountUsdtPerLevel1 :
+                              expandedLevel === 1 ? userAmountUsdtPerLevel2 :
+                                expandedLevel === 2 ? userAmountUsdtPerLevel3 :
+                                  expandedLevel === 3 ? userAmountUsdtPerLevel4 :
+                                    expandedLevel === 4 ? userAmountUsdtPerLevel5 :
+                                      expandedLevel === 5 ? userAmountUsdtPerLevel6 :
+                                        expandedLevel === 6 ? userAmountUsdtPerLevel7 :
+                                          expandedLevel === 7 ? userAmountUsdtPerLevel8 :
+                                            expandedLevel === 8 ? userAmountUsdtPerLevel9 :
+                                              expandedLevel === 9 ? userAmountUsdtPerLevel10 :
+                                                0, // fallback
+                            6
+                          )).toLocaleString()}
+                        </p>
+                      )}
+
+                      <p><strong>Number of referrals:</strong>
+
+
+                        {
+
+                          expandedLevel === 0 ? getUserReferralCountPerLevel1 :
+                            expandedLevel === 1 ? getUserReferralCountPerLevel2 :
+                              expandedLevel === 2 ? getUserReferralCountPerLevel3 :
+                                expandedLevel === 3 ? getUserReferralCountPerLevel4 :
+                                  expandedLevel === 4 ? getUserReferralCountPerLevel5 :
+                                    expandedLevel === 5 ? getUserReferralCountPerLevel6 :
+                                      expandedLevel === 6 ? getUserReferralCountPerLevel7 :
+                                        expandedLevel === 7 ? getUserReferralCountPerLevel8 :
+                                          expandedLevel === 8 ? getUserReferralCountPerLevel9 :
+                                            expandedLevel === 9 ? getUserReferralCountPerLevel10 :
+                                              0
+                        }
+
+                      </p>
+
+
+                      {loadingReferrals ? (
+                        <p>Loading referral details...</p>
+                      ) : (
+                        <ul style={{ textAlign: 'left' }}>
+                          {referralsData.map((ref, index) => (
+                            <li key={index}>
+                              {/* <strong>Wallet:</strong> {ref.wallet.slice(0, 4)}...{ref.wallet.slice(-4)}<br /> */}
+
+                              <strong>Wallet:</strong> <span style={{fontSize:"75%"}}>{ref.wallet}</span> <br></br>
+                              <strong>Amount:</strong> ${ref.amount.toLocaleString()}
+                              <hr />
+                            </li>
+                          ))}
+                          {referralsData.length === 0 && <p>No referrals found at this level.</p>}
+                        </ul>
+                      )}
+
+                    </>
+                  ) : (
+                    <>
+
+                      <button
+                        onClick={() => setShowDashboard(false)}
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          background: 'transparent',
+                          border: 'none',
+                          fontSize: '1.5rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ✖️
+                      </button>
+                      <br />
+                      <h2>Your Personal Dashboard</h2>
+                      <p>Total Invested: ${totalInvested} <br></br>
+                        {Number(String(totalInvested).replace(/,/g, "")) >= 1000 ? <>You are part of the DAO</> : <> 🚀 You are missing <span style={{ color: "green" }}>{1000 - Number(String(totalInvested).replace(/,/g, ""))}</span> USDTs to activate your voting power in the DAO </>}
+
+                      </p>
+                      <p>
+                        Total Invested
+                        <span style={{ color: "green", fontWeight: "bold" }}> (with 20% extra) </span>:
+                        ${(Number(String(totalInvested).replace(/,/g, "")) * 1.2).toFixed(2)}
+                      </p>
+                      <p>Total tokens purchased: {totalTokenBuyedWithoutBonus} $ELMO</p>
+                      <p>
+                        Total tokens purchased
+                        <span style={{ color: "green", fontWeight: "bold" }}> (with 20% extra) </span>:
+                        ${totalTokenBuyed} $ELMO
+                      </p>
+                      {console.log(totalTokenBuyed)}
+                      <p>
+
+                        🌕 Upon reaching the moon ($0.000416), your $ELMO cost  <span style={{ color: "green", fontWeight: "bold" }}> ${Number(ethers.formatUnits(userTokensPurchased, 18)) * 0.000416}</span>
+                      </p>
+
+                      <hr />
+                      <p>Total USDTs received at your level 1 (8%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel1, 6)).toLocaleString()}</p> <button onClick={() => setExpandedLevel(0)}>Expand Level</button>
+                      <p>Total USDTs received at your level 2 (4%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel2, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(1)}>Expand Level</button>
+                      <p>Total USDTs received at your level 3 (2%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel3, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(2)}>Expand Level</button>
+                      <p>Total USDTs received at your level 4 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel4, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(3)}>Expand Level</button>
+                      <p>Total USDTs received at your level 5 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel5, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(4)}>Expand Level</button>
+                      <p>Total USDTs received at your level 6 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel6, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(5)}>Expand Level</button>
+                      <p>Total USDTs received at your level 7 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel7, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(6)}>Expand Level</button>
+                      <p>Total USDTs received at your level 8 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel8, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(7)}>Expand Level</button>
+                      <p>Total USDTs received at your level 9 (0.50%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel9, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(8)}>Expand Level</button>
+                      <p>Total USDTs received at your level 10 (0.50%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel10, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(9)}>Expand Level</button>
+
+
+                    </>
+                  )}
                 </div>
               </div>
             )}
