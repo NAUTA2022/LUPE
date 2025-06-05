@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+                                            import React, { useEffect, useState } from 'react'
 import Spline from '@splinetool/react-spline'
 import FondoAnimado from './FondoAnimado'
 import { ethers } from "ethers";
@@ -59,6 +59,7 @@ const Hero = () => {
   const [expandedLevel, setExpandedLevel] = useState(null);
   const [referralsData, setReferralsData] = useState([]);
   const [loadingReferrals, setLoadingReferrals] = useState(false);
+  const [splineApp, setSplineApp] = useState(null);
 
 
   const address = useActiveAccount();
@@ -518,20 +519,55 @@ const Hero = () => {
     }
   }, [expandedLevel]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (splineApp) {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        splineApp.setSize(width, height);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    // Ajustar tamaño inicial
+    handleResize();
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, [splineApp]);
 
   return (
     <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
+      height: '100vh',
+      width: '100%',
       position: 'relative',
-      overflow: 'hidden',
-      padding: '4rem 0'
+      overflow: 'hidden'
     }}>
-
       <ToastContainer />
       <FondoAnimado />
+
+      {/* Modelo 3D de fondo */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: -1
+      }}>
+        <Spline
+          scene="https://prod.spline.design/m5E2hkQzMPP2QApM/scene.splinecode"
+          style={{
+            width: '100%',
+            height: '100%'
+          }}
+          onLoad={(spline) => {
+            console.log('Spline loaded successfully');
+          }}
+          onError={(error) => {
+            console.error('Spline error:', error);
+          }}
+        />
+      </div>
 
       {/* Iluminación naranja difuminada superior */}
       <div style={{
@@ -540,8 +576,8 @@ const Hero = () => {
         left: 0,
         width: '100%',
         height: '100%',
-        background: 'radial-gradient(circle at 0% 0%, rgba(255, 165, 0, 0.1) 0%, transparent 70%)',
-        zIndex: 0
+        background: 'radial-gradient(circle at 0% 0%, rgba(206, 162, 43, 0.15) 0%, transparent 70%)',
+        zIndex: 1
       }} />
       {/* Iluminación naranja difuminada inferior - más sutil */}
       <div style={{
@@ -550,439 +586,223 @@ const Hero = () => {
         left: 0,
         width: '100%',
         height: '100%',
-        background: 'radial-gradient(circle at 0% 100%, rgba(255, 165, 0, 0.05) 0%, transparent 50%)',
-        zIndex: 0
+        background: 'radial-gradient(circle at 0% 100%, rgba(206, 162, 43, 0.1) 0%, transparent 50%)',
+        zIndex: 1
       }} />
 
-      <div className="container-fluid bg-transparent" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="row align-items-center justify-content-center px-4 mx-auto bg-transparent" style={{ maxWidth: '1600px' }}>
-          <div className="col-md-6 col-lg-5 bg-transparent order-md-2">
-            <div style={{
-              width: '100%',
-              height: '700px',
-              backgroundColor: 'transparent',
-              overflow: 'hidden',
-              position: 'relative'
-            }}>
-              {/* Imagen para móvil */}
-              <div className="d-md-none" style={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
+      {/* Contenido principal */}
+      <div className="container-fluid h-100 d-flex align-items-center" style={{ position: 'relative', zIndex: 2 }}>
+        <div className="row w-100">
+          <div className="col-md-8 col-lg-7 d-flex flex-column justify-content-center px-4" style={{ marginLeft: '5%' }}>
+            <div className="d-flex flex-column">
+              <h1 className="display-4 fw-bold mb-3 text-white" style={{ 
+                fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', 
+                lineHeight: '1.2',
+                fontFamily: "'Orbitron', sans-serif"
+              }}>LUPE your Gateway<br />to the future Real Estate</h1>
+              <p
+                className="lead mb-4 text-white"
+                style={{
+                  fontSize: 'clamp(0.9rem, 1.5vw, 1.1rem)',
+                  fontFamily: "'Orbitron', sans-serif",
+                  lineHeight: '1.4'
+                }}
+              >
+                Evolving crypto economy, offering staking rewards and innovative
+                opportunities On Chain Ecosystem.
+              </p>
 
-                <img
-                  src="/assets/Elon.png"
-                  alt="Elon"
+              <div className="d-flex flex-column">
+                <button
+                  className="btn btn-lg"
                   style={{
-                    width: 'auto',
-                    height: '100%',
-                    maxWidth: '100%',
-                    objectFit: 'contain'
-                  }}
-                />
-              </div>
-              {/* Spline para pantallas medianas y grandes */}
-              <div className="d-none d-md-block" style={{ width: '100%', height: '100%', position: 'relative' }}>
-                <Spline
-                  scene="https://prod.spline.design/hS0tcOmPPCrxkMJM/scene.splinecode"
-                  style={{
+                    backgroundColor: '#CEA22B',
+                    color: 'white',
+                    fontFamily: "'Orbitron', sans-serif",
+                    fontSize: 'clamp(1rem, 1.5vw, 1.1rem)',
+                    padding: 'clamp(0.8rem, 2vw, 1rem) clamp(1.5rem, 3vw, 2rem)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    transition: 'all 0.3s ease',
                     width: '100%',
-                    height: '100%'
+                    maxWidth: '300px',
+                    fontWeight: '500'
                   }}
-                  onLoad={(spline) => {
-                    console.log('Spline loaded successfully');
-                    spline.setSize(window.innerWidth, window.innerHeight);
-                  }}
-                  onError={(error) => {
-                    console.error('Spline error:', error);
-                  }}
-                />
+                  onMouseOver={(e) => e.target.style.backgroundColor = '#B38A24'}
+                  onMouseOut={(e) => e.target.style.backgroundColor = '#CEA22B'}
+                >
+                  Ingresar
+                </button>
               </div>
             </div>
-          </div>
-          <div className="col-md-6 col-lg-5 bg-transparent order-md-1">
-            <h1 className="display-3 fw-bold mb-4 text-white">ELON NEEDS YOU </h1>
-            <p
-              className="lead mb-4 text-white"
-              style={{
-                fontSize: '1rem',
-                fontFamily: "'Orbitron', sans-serif"
-              }}
-            >
-              $ELMO is not just another memecoin.
-              It burns 90% of its supply and is aiming for $0.000416.
-              Only 20,000 pioneers will be part of this Airdrop.
-              <br /><br />
-
-              🚀 Invest from $0.00001 and receive +20% extra.
-              Every dollar you invest burns tokens, triggers raffles, and gives you a voice in the DAO.
-              <br /><br />
-
-              💥 What if $100 turns into $4,992?
-              We’re firing up the engines — but without you, we won’t take off.
-            </p>
-            <ConnectButton
-              client={client}
-              // accountAbstraction={{
-              //   chain: polygon,
-              //   sponsorGas: true,
-              // }}
-              {...connectButtonOptions}
-
-              connectButton={{ label: "Connect Wallet" }}
-              locale={"es_ES"}
-              theme={lightTheme({
-                colors: {
-                  primaryButtonBg: "green",
-                  primaryButtonText: "Connect Wallet",
-                },
-                fontFamily: "'Orbitron', sans-serif"
-              })}
-
-
-            />
-            <br />
-            <br />
-            <div className="d-flex gap-3 mb-4">
-
-              {address ?
-                <>
-
-
-                  <input
-                    onChange={(e) => {
-                      setUsdtAmount(e.target.value);
-                    }}
-                    value={usdtAmount}
-                    type="number"
-                  />
-                  <button
-                    onClick={() => handleBuy(usdtAmount)}
-                    style={{
-                      fontSize: '1rem',
-                      fontFamily: "'Orbitron', sans-serif",
-                      minWidth: '130px', // para que no se achique cuando aparece el spinner
-                    }}
-                    className="btn btn-outline-light btn-lg"
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? (
-                      <div className="spinner-border text-light" style={{ width: '1.5rem', height: '1.5rem' }} role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                    ) : (
-                      "Comprar"
-                    )}
-                  </button>
-
-
-
-
-                </>
-                :
-
-                <></>
-                // <ConnectButton
-                //   client={client}
-                //   // accountAbstraction={{
-                //   //   chain: polygon,
-                //   //   sponsorGas: true,
-                //   // }}
-                //   {...connectButtonOptions}
-
-                //   connectButton={{ label: "Connect Wallet" }}
-                //   locale={"es_ES"}
-                //   theme={lightTheme({
-                //     colors: {
-                //       primaryButtonBg: "green",
-                //       primaryButtonText: "Connect Wallet",
-                //     },
-                //     fontFamily: "'Orbitron', sans-serif"
-                //   })}
-
-
-                // />
-              }
-
-            </div>
-
-            <p
-              className="lead mb-4 text-white"
-              style={{
-                fontSize: '1rem',
-                fontFamily: "'Orbitron', sans-serif"
-              }}
-            >
-              Total tokens sold:
-              {tokenSold} $ELMO
-              <br />
-              Total USDT paid in referrals:
-              ${totalPayedSponsors}
-              <br />
-              Total USDT paid in referrals:
-              Total USDT Raised: ${Number(String(usdtRaised).replace(/,/g, ""))} / 200,000
-              <div style={{
-                position: 'relative',
-                height: '30px',
-                background: '#ddd',
-                borderRadius: '20px',
-                overflow: 'hidden'
-              }}>
-                {console.log(Number(usdtRaised.replace(/,/g, '')))}
-                <div style={{
-                  height: '100%',
-                  width: `${Math.min((Number(totalUsdtRaised) / 200000000000) * 100, 100)}%`, // 200000 con 6 decimales
-                  background: 'linear-gradient(to right, #00c6ff, #0072ff)',
-                  transition: 'width 1s ease-in-out',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'flex-end',
-                  paddingRight: '5px',
-                }}>
-                </div>
-                {/* Cohete */}
-                <div style={{
-                  position: 'absolute',
-                  top: '-5px', // para que quede encima de la barra
-                  left: `calc(${Math.min((Number(totalUsdtRaised) / 200000000000) * 100, 100)}% - 12px)`, // -12px para centrar el emoji
-                  transition: 'left 1s ease-in-out',
-                  fontSize: '24px',
-                }}>
-                  🚀
-                </div>
-
-              </div>
-
-            </p>
-
-            {address ? <>
-
-              <button
-                onClick={() => setShowDashboard(true)}
-                style={{
-                  fontSize: '1rem',
-                  fontFamily: "'Orbitron', sans-serif"
-                }} className="btn btn-outline-light btn-lg">Personal Dashboard </button>
-
-              <button
-                onClick={() => {
-                  const referralLink = `${window.location.origin}/?referral=${address.address}`;
-                  navigator.clipboard.writeText(referralLink)
-                    .then(() => {
-                      copyCode();
-                    })
-                    .catch(err => {
-                      console.error("Failed to copy: ", err);
-                    });
-                }}
-                style={{
-                  fontSize: '1rem',
-                  fontFamily: "'Orbitron', sans-serif",
-                  minWidth: '130px',
-                }}
-                className="btn btn-outline-light btn-lg"
-              >
-                Copy referral link
-              </button>
-
-            </>
-
-
-              : <></>}
-            <br />
-            <br />
-            <br />
-            <a
-              href="https://chatgpt.com/g/g-68083ff0f5408191af9e9138ca2135c8-elonbot-mooncommander"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <button
-                style={{
-                  fontSize: '1rem',
-                  fontFamily: "'Orbitron', sans-serif",
-                  minWidth: '130px',
-                }}
-                className="btn btn-outline-light btn-lg"
-              >
-                Questions? Talk with Elon
-              </button>
-            </a>
-
-
-
-
-            {showDashboard && (
-              <div style={{
-                position: 'fixed',
-                top: 0, left: 0,
-                width: '100vw',
-                height: '100vh',
-                backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 9999,
-              }}>
-                <div style={{
-                  backgroundColor: 'white',
-                  padding: '2rem',
-                  borderRadius: '20px',
-                  maxWidth: '500px',
-                  width: '90%',
-                  textAlign: 'center',
-                  position: 'relative',
-                  fontFamily: "'Orbitron', sans-serif",
-                  maxHeight: '80vh',            // 👈 limita la altura
-                  overflowY: 'auto'             // 👈 activa scroll vertical si se necesita,
-                }}>
-
-
-
-
-
-                  {expandedLevel !== null ? (
-                    // Vista expandida
-                    <>
-                      <button
-                        onClick={() => setExpandedLevel(null)}
-                        style={{
-                          position: 'absolute',
-                          top: '10px',
-                          right: '10px',
-                          background: 'transparent',
-                          border: 'none',
-                          fontSize: '1.5rem',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        🔙
-                      </button>
-                      <h2>Level {expandedLevel + 1} Details</h2>
-                      {expandedLevel !== null && (
-                        <p><strong>Total USDT received:</strong> {
-                          Number(ethers.formatUnits(
-                            expandedLevel === 0 ? userAmountUsdtPerLevel1 :
-                              expandedLevel === 1 ? userAmountUsdtPerLevel2 :
-                                expandedLevel === 2 ? userAmountUsdtPerLevel3 :
-                                  expandedLevel === 3 ? userAmountUsdtPerLevel4 :
-                                    expandedLevel === 4 ? userAmountUsdtPerLevel5 :
-                                      expandedLevel === 5 ? userAmountUsdtPerLevel6 :
-                                        expandedLevel === 6 ? userAmountUsdtPerLevel7 :
-                                          expandedLevel === 7 ? userAmountUsdtPerLevel8 :
-                                            expandedLevel === 8 ? userAmountUsdtPerLevel9 :
-                                              expandedLevel === 9 ? userAmountUsdtPerLevel10 :
-                                                0, // fallback
-                            6
-                          )).toLocaleString()}
-                        </p>
-                      )}
-
-                      <p><strong>Number of referrals:</strong>
-
-
-                        {
-
-                          expandedLevel === 0 ? getUserReferralCountPerLevel1 :
-                            expandedLevel === 1 ? getUserReferralCountPerLevel2 :
-                              expandedLevel === 2 ? getUserReferralCountPerLevel3 :
-                                expandedLevel === 3 ? getUserReferralCountPerLevel4 :
-                                  expandedLevel === 4 ? getUserReferralCountPerLevel5 :
-                                    expandedLevel === 5 ? getUserReferralCountPerLevel6 :
-                                      expandedLevel === 6 ? getUserReferralCountPerLevel7 :
-                                        expandedLevel === 7 ? getUserReferralCountPerLevel8 :
-                                          expandedLevel === 8 ? getUserReferralCountPerLevel9 :
-                                            expandedLevel === 9 ? getUserReferralCountPerLevel10 :
-                                              0
-                        }
-
-                      </p>
-
-
-                      {loadingReferrals ? (
-                        <p>Loading referral details...</p>
-                      ) : (
-                        <ul style={{ textAlign: 'left' }}>
-                          {referralsData.map((ref, index) => (
-                            <li key={index}>
-                              {/* <strong>Wallet:</strong> {ref.wallet.slice(0, 4)}...{ref.wallet.slice(-4)}<br /> */}
-
-                              <strong>Wallet:</strong> <span style={{fontSize:"75%"}}>{ref.wallet}</span> <br></br>
-                              <strong>Amount:</strong> ${ref.amount.toLocaleString()}
-                              <hr />
-                            </li>
-                          ))}
-                          {referralsData.length === 0 && <p>No referrals found at this level.</p>}
-                        </ul>
-                      )}
-
-                    </>
-                  ) : (
-                    <>
-
-                      <button
-                        onClick={() => setShowDashboard(false)}
-                        style={{
-                          position: 'absolute',
-                          top: '10px',
-                          right: '10px',
-                          background: 'transparent',
-                          border: 'none',
-                          fontSize: '1.5rem',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        ✖️
-                      </button>
-                      <br />
-                      <h2>Your Personal Dashboard</h2>
-                      <p>Total Invested: ${totalInvested} <br></br>
-                        {Number(String(totalInvested).replace(/,/g, "")) >= 1000 ? <>You are part of the DAO</> : <> 🚀 You are missing <span style={{ color: "green" }}>{1000 - Number(String(totalInvested).replace(/,/g, ""))}</span> USDTs to activate your voting power in the DAO </>}
-
-                      </p>
-                      <p>
-                        Total Invested
-                        <span style={{ color: "green", fontWeight: "bold" }}> (with 20% extra) </span>:
-                        ${(Number(String(totalInvested).replace(/,/g, "")) * 1.2).toFixed(2)}
-                      </p>
-                      <p>Total tokens purchased: {totalTokenBuyedWithoutBonus} $ELMO</p>
-                      <p>
-                        Total tokens purchased
-                        <span style={{ color: "green", fontWeight: "bold" }}> (with 20% extra) </span>:
-                        ${totalTokenBuyed} $ELMO
-                      </p>
-                      {console.log(totalTokenBuyed)}
-                      <p>
-
-                        🌕 Upon reaching the moon ($0.000416), your $ELMO cost  <span style={{ color: "green", fontWeight: "bold" }}> ${Number(ethers.formatUnits(userTokensPurchased, 18)) * 0.000416}</span>
-                      </p>
-
-                      <hr />
-                      <p>Total USDTs received at your level 1 (8%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel1, 6)).toLocaleString()}</p> <button onClick={() => setExpandedLevel(0)}>Expand Level</button>
-                      <p>Total USDTs received at your level 2 (4%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel2, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(1)}>Expand Level</button>
-                      <p>Total USDTs received at your level 3 (2%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel3, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(2)}>Expand Level</button>
-                      <p>Total USDTs received at your level 4 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel4, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(3)}>Expand Level</button>
-                      <p>Total USDTs received at your level 5 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel5, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(4)}>Expand Level</button>
-                      <p>Total USDTs received at your level 6 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel6, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(5)}>Expand Level</button>
-                      <p>Total USDTs received at your level 7 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel7, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(6)}>Expand Level</button>
-                      <p>Total USDTs received at your level 8 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel8, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(7)}>Expand Level</button>
-                      <p>Total USDTs received at your level 9 (0.50%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel9, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(8)}>Expand Level</button>
-                      <p>Total USDTs received at your level 10 (0.50%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel10, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(9)}>Expand Level</button>
-
-
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-
           </div>
         </div>
       </div>
+
+      {/* Modal del Dashboard */}
+      {showDashboard && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '2rem',
+            borderRadius: '20px',
+            maxWidth: '500px',
+            width: '90%',
+            textAlign: 'center',
+            position: 'relative',
+            fontFamily: "'Orbitron', sans-serif",
+            maxHeight: '80vh',            // 👈 limita la altura
+            overflowY: 'auto'             // 👈 activa scroll vertical si se necesita,
+          }}>
+
+
+
+
+
+            {expandedLevel !== null ? (
+              // Vista expandida
+              <>
+                <button
+                  onClick={() => setExpandedLevel(null)}
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    background: 'transparent',
+                    border: 'none',
+                    fontSize: '1.5rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🔙
+                </button>
+                <h2>Level {expandedLevel + 1} Details</h2>
+                {expandedLevel !== null && (
+                  <p><strong>Total USDT received:</strong> {
+                    Number(ethers.formatUnits(
+                      expandedLevel === 0 ? userAmountUsdtPerLevel1 :
+                        expandedLevel === 1 ? userAmountUsdtPerLevel2 :
+                          expandedLevel === 2 ? userAmountUsdtPerLevel3 :
+                            expandedLevel === 3 ? userAmountUsdtPerLevel4 :
+                              expandedLevel === 4 ? userAmountUsdtPerLevel5 :
+                                expandedLevel === 5 ? userAmountUsdtPerLevel6 :
+                                  expandedLevel === 6 ? userAmountUsdtPerLevel7 :
+                                    expandedLevel === 7 ? userAmountUsdtPerLevel8 :
+                                      expandedLevel === 8 ? userAmountUsdtPerLevel9 :
+                                        expandedLevel === 9 ? userAmountUsdtPerLevel10 :
+                                          0, // fallback
+                      6
+                    )).toLocaleString()}
+                  </p>
+                )}
+
+                <p><strong>Number of referrals:</strong>
+
+
+                  {
+
+                    expandedLevel === 0 ? getUserReferralCountPerLevel1 :
+                      expandedLevel === 1 ? getUserReferralCountPerLevel2 :
+                        expandedLevel === 2 ? getUserReferralCountPerLevel3 :
+                          expandedLevel === 3 ? getUserReferralCountPerLevel4 :
+                            expandedLevel === 4 ? getUserReferralCountPerLevel5 :
+                              expandedLevel === 5 ? getUserReferralCountPerLevel6 :
+                                expandedLevel === 6 ? getUserReferralCountPerLevel7 :
+                                  expandedLevel === 7 ? getUserReferralCountPerLevel8 :
+                                    expandedLevel === 8 ? getUserReferralCountPerLevel9 :
+                                      expandedLevel === 9 ? getUserReferralCountPerLevel10 :
+                                        0
+                  }
+
+                </p>
+
+
+                {loadingReferrals ? (
+                  <p>Loading referral details...</p>
+                ) : (
+                  <ul style={{ textAlign: 'left' }}>
+                    {referralsData.map((ref, index) => (
+                      <li key={index}>
+                        {/* <strong>Wallet:</strong> {ref.wallet.slice(0, 4)}...{ref.wallet.slice(-4)}<br /> */}
+
+                        <strong>Wallet:</strong> <span style={{fontSize:"75%"}}>{ref.wallet}</span> <br></br>
+                        <strong>Amount:</strong> ${ref.amount.toLocaleString()}
+                        <hr />
+                      </li>
+                    ))}
+                    {referralsData.length === 0 && <p>No referrals found at this level.</p>}
+                  </ul>
+                )}
+
+              </>
+            ) : (
+              <>
+
+                <button
+                  onClick={() => setShowDashboard(false)}
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    background: 'transparent',
+                    border: 'none',
+                    fontSize: '1.5rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✖️
+                </button>
+                <br />
+                <h2>Your Personal Dashboard</h2>
+                <p>Total Invested: ${totalInvested} <br></br>
+                  {Number(String(totalInvested).replace(/,/g, "")) >= 1000 ? <>You are part of the DAO</> : <> 🚀 You are missing <span style={{ color: "green" }}>{1000 - Number(String(totalInvested).replace(/,/g, ""))}</span> USDTs to activate your voting power in the DAO </>}
+
+                </p>
+                <p>
+                  Total Invested
+                  <span style={{ color: "green", fontWeight: "bold" }}> (with 20% extra) </span>:
+                  ${(Number(String(totalInvested).replace(/,/g, "")) * 1.2).toFixed(2)}
+                </p>
+                <p>Total tokens purchased: {totalTokenBuyedWithoutBonus} $LUPE</p>
+                <p>
+                  Total tokens purchased
+                  <span style={{ color: "green", fontWeight: "bold" }}> (with 20% extra) </span>:
+                  ${totalTokenBuyed} $LUPE
+                </p>
+                {console.log(totalTokenBuyed)}
+                <p>
+
+                  🌕 Upon reaching the moon ($0.000416), your $LUPE cost  <span style={{ color: "green", fontWeight: "bold" }}> ${Number(ethers.formatUnits(userTokensPurchased, 18)) * 0.000416}</span>
+                </p>
+
+                <hr />
+                <p>Total USDTs received at your level 1 (8%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel1, 6)).toLocaleString()}</p> <button onClick={() => setExpandedLevel(0)}>Expand Level</button>
+                <p>Total USDTs received at your level 2 (4%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel2, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(1)}>Expand Level</button>
+                <p>Total USDTs received at your level 3 (2%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel3, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(2)}>Expand Level</button>
+                <p>Total USDTs received at your level 4 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel4, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(3)}>Expand Level</button>
+                <p>Total USDTs received at your level 5 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel5, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(4)}>Expand Level</button>
+                <p>Total USDTs received at your level 6 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel6, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(5)}>Expand Level</button>
+                <p>Total USDTs received at your level 7 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel7, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(6)}>Expand Level</button>
+                <p>Total USDTs received at your level 8 (1%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel8, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(7)}>Expand Level</button>
+                <p>Total USDTs received at your level 9 (0.50%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel9, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(8)}>Expand Level</button>
+                <p>Total USDTs received at your level 10 (0.50%): ${Number(ethers.formatUnits(userAmountUsdtPerLevel10, 6)).toLocaleString()}</p><button onClick={() => setExpandedLevel(9)}>Expand Level</button>
+
+
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
