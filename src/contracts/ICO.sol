@@ -4,26 +4,21 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
-contract ICO is Ownable {
+contract ICO is Ownable, Pausable {
     IERC20 public usdt;
 
-    uint256 public constant TOTAL_TOKENS_FOR_SALE = 25_000_000_000 * 1e18;
-    uint256 public constant USDT_HARDCAP = 200_000 * 1e6;
-    uint256 public constant MIN_PURCHASE = 50 * 1e6;
+    uint256 public constant TOTAL_TOKENS_FOR_SALE = 150_000_000 * 1e18;
+    uint256 public constant MIN_PURCHASE = 100 * 1e6;
 
     uint256 public totalTokensSold;
-    uint256 public totalTokensSoldWithoutBonus;
     uint256 public totalUsdtRaised;
     uint256 public totalUsdtRaisedRemaining;
     uint256 public totalUsdtPaidToSponsors;
 
-    uint256 public startTime;
-    uint256 public endTime;
-
     mapping(address => uint256) public userUsdtSpent;
     mapping(address => uint256) public userTokensPurchased;
-    mapping(address => uint256) public userTokensPurchasedWithoutBonus;
     mapping(address => mapping(uint256 => uint256))
         public userAmountUsdtPerLevel;
     mapping(address => mapping(uint256 => mapping(address => uint256)))
@@ -39,7 +34,6 @@ contract ICO is Ownable {
         address indexed buyer,
         uint256 usdtAmount,
         uint256 tokensReceived,
-        uint256 bonus,
         address indexed referrer,
         uint256 time
     );
@@ -68,17 +62,14 @@ contract ICO is Ownable {
         usdt = IERC20(_usdt);
     }
 
-    function buyTokens(uint256 usdtAmount, address referrer) external {
-        require(block.timestamp >= startTime, "ICO has not started yet");
-        require(block.timestamp <= endTime, "ICO has ended");
-        require(usdtAmount >= MIN_PURCHASE, "Minimum 50 USDT");
-        require(
-            totalUsdtRaised + usdtAmount <= USDT_HARDCAP,
-            "Hardcap reached"
-        );
+    function buyTokens(
+        uint256 usdtAmount,
+        address referrer
+    ) external whenNotPaused {
+        require(usdtAmount >= MIN_PURCHASE, "Minimum 100 USDT");
         require(referrer != msg.sender, "You cannot refer yourself");
-        require(referrer != address(0), "Referrer cannot be address 0");
 
+        // Asignación de referido (una única vez)
         if (
             userUsdtSpent[msg.sender] == 0 &&
             referrerOf[msg.sender] == address(0) &&
@@ -95,64 +86,101 @@ contract ICO is Ownable {
 
         distributeReferralRewards(msg.sender, usdtAmount);
 
-        uint256 tokenPrice = getCurrentTokenPrice();
-        uint256 tokensToReceive = (usdtAmount * 1e18) / tokenPrice;
-        uint256 bonus = (tokensToReceive * 20) / 100;
-        uint256 totalTokensWithBonus = tokensToReceive + bonus;
+        uint256 remainingUsdt = usdtAmount;
+        uint256 tokensToReceive = 0;
+        uint256 sold = totalTokensSold;
+
+        // Configuración de los tramos de precio
+        uint256[7] memory trancheLimits = [
+            uint256(10_000_000),
+            uint256(15_000_000),
+            uint256(20_000_000),
+            uint256(25_000_000),
+            uint256(30_000_000),
+            uint256(25_000_000),
+            uint256(25_000_000)
+        ];
+
+        uint256[7] memory tranchePrices = [
+            uint256(100_000), // 0.10 USDT con 6 decimales
+            uint256(120_000), // 0.12
+            uint256(150_000), // 0.15
+            uint256(180_000), // 0.18
+            uint256(220_000), // 0.22
+            uint256(260_000), // 0.26
+            uint256(300_000) // 0.30
+        ];
+
+        uint256 trancheSold = sold;
+
+        for (
+            uint256 i = 0;
+            i < trancheLimits.length && remainingUsdt > 0;
+            i++
+        ) {
+            uint256 trancheCap = trancheLimits[i] * 1e18;
+
+            // Si ya se vendió todo este tramo, restamos y pasamos al siguiente
+            if (trancheSold >= trancheCap) {
+                trancheSold -= trancheCap;
+                continue;
+            }
+
+            // Cuántos tokens quedan disponibles en este tramo
+            uint256 tokensLeftInTranche = trancheCap - trancheSold;
+            uint256 price = tranchePrices[i];
+
+            // Máxima cantidad de tokens que el usuario puede comprar con lo que le queda de USDT
+            uint256 maxTokensInThisTranche = (remainingUsdt * 1e18) / price;
+
+            // Tomamos la cantidad menor entre lo que puede comprar y lo que queda en el tramo
+            uint256 tokensToBuy = maxTokensInThisTranche < tokensLeftInTranche
+                ? maxTokensInThisTranche
+                : tokensLeftInTranche;
+
+            // Cuánto cuesta en USDT esos tokens
+            uint256 cost = (tokensToBuy * price) / 1e18;
+
+            tokensToReceive += tokensToBuy;
+            remainingUsdt -= cost;
+            trancheSold += tokensToBuy;
+        }
 
         require(
-            totalTokensSold + totalTokensWithBonus <= TOTAL_TOKENS_FOR_SALE,
+            totalTokensSold + tokensToReceive <= TOTAL_TOKENS_FOR_SALE,
             "Not enough tokens left"
         );
 
-        userUsdtSpent[msg.sender] += usdtAmount;
-        userTokensPurchased[msg.sender] += totalTokensWithBonus;
-        userTokensPurchasedWithoutBonus[msg.sender] += tokensToReceive;
+        userUsdtSpent[msg.sender] += usdtAmount - remainingUsdt;
+        userTokensPurchased[msg.sender] += tokensToReceive;
 
-        totalUsdtRaised += usdtAmount;
-        totalTokensSold += totalTokensWithBonus;
-        totalTokensSoldWithoutBonus += tokensToReceive;
+        totalUsdtRaised += usdtAmount - remainingUsdt;
+        totalTokensSold += tokensToReceive;
 
         emit TokensPurchased(
             msg.sender,
-            usdtAmount,
+            usdtAmount - remainingUsdt,
             tokensToReceive,
-            bonus,
             referrer,
             block.timestamp
         );
     }
 
-    function distributeReferralRewards(address buyer, uint256 usdtAmount)
-        internal
-    {
+    function distributeReferralRewards(
+        address buyer,
+        uint256 usdtAmount
+    ) internal {
         address currentReferrer = referrerOf[buyer];
-        uint256[10] memory rewardPercents = [
-            uint256(8),
-            4,
-            2,
-            1,
-            1,
-            1,
-            1,
-            1,
-            50,
-            50
-        ];
 
-        for (uint256 level = 0; level < 10; level++) {
+        uint256[8] memory rewardPercents = [uint256(10), 3, 2, 1, 1, 1, 1, 1];
+
+        for (uint256 level = 0; level < 8; level++) {
             if (currentReferrer == address(0)) {
                 break;
             }
 
             uint256 percent = rewardPercents[level];
-            uint256 reward;
-
-            if (level < 8) {
-                reward = (usdtAmount * percent) / 100;
-            } else {
-                reward = (usdtAmount * percent) / 10000;
-            }
+            uint256 reward = (usdtAmount * percent) / 100;
 
             if (reward > 0) {
                 usdt.transfer(currentReferrer, reward);
@@ -167,6 +195,7 @@ contract ICO is Ownable {
                 }
 
                 referralIsInvestor[currentReferrer][buyer] = true;
+
                 emit ReferralRewardPaid(
                     currentReferrer,
                     buyer,
@@ -182,10 +211,12 @@ contract ICO is Ownable {
         uint256 remainingBalance = usdt.balanceOf(address(this));
         totalUsdtRaisedRemaining += remainingBalance;
         totalUsdtPaidToSponsors += usdtAmount - remainingBalance;
+
         require(
             usdt.transfer(owner(), remainingBalance),
             "USDT transfer failed"
         );
+
         emit RemainingBalanceTransferred(
             owner(),
             remainingBalance,
@@ -194,42 +225,37 @@ contract ICO is Ownable {
     }
 
     function getCurrentTokenPrice() public view returns (uint256) {
-        if (totalUsdtRaised < 50_000 * 1e6) {
-            return 10; // 0.00001
-        } else if (totalUsdtRaised < 100_000 * 1e6) {
-            return 20; // 0.00002
-        } else if (totalUsdtRaised < 150_000 * 1e6) {
-            return 30; // 0.00003
-        } else {
-            return 40; // 0.00004
-        }
+        uint256 sold = totalTokensSold;
+
+        if (sold < 10_000_000 * 1e18) return 100_000;
+        // 0.10 USDT con 6 decimales
+        else if (sold < 25_000_000 * 1e18) return 120_000;
+        // 0.12
+        else if (sold < 45_000_000 * 1e18) return 150_000;
+        // 0.15
+        else if (sold < 70_000_000 * 1e18) return 180_000;
+        // 0.18
+        else if (sold < 100_000_000 * 1e18) return 220_000;
+        // 0.22
+        else if (sold < 125_000_000 * 1e18) return 260_000;
+        // 0.26
+        else return 300_000; // 0.30
     }
 
     function getUserUsdtSpent(address user) external view returns (uint256) {
         return userUsdtSpent[user];
     }
 
-    function getUserTokensPurchased(address user)
-        external
-        view
-        returns (uint256)
-    {
+    function getUserTokensPurchased(
+        address user
+    ) external view returns (uint256) {
         return userTokensPurchased[user];
     }
 
-    function getUserTokensPurchasedWithoutBonus(address user)
-        external
-        view
-        returns (uint256)
-    {
-        return userTokensPurchasedWithoutBonus[user];
-    }
-
-    function getUserAmountUsdtPerLevel(address user, uint256 level)
-        external
-        view
-        returns (uint256)
-    {
+    function getUserAmountUsdtPerLevel(
+        address user,
+        uint256 level
+    ) external view returns (uint256) {
         return userAmountUsdtPerLevel[user][level];
     }
 
@@ -248,27 +274,24 @@ contract ICO is Ownable {
         }
     }
 
-    function getUserReferralsPerLevel(address user, uint256 level)
-        external
-        view
-        returns (address[] memory)
-    {
+    function getUserReferralsPerLevel(
+        address user,
+        uint256 level
+    ) external view returns (address[] memory) {
         return userReferralsPerLevel[user][level];
     }
 
-    function getUserReferralCountPerLevel(address user, uint256 level)
-        external
-        view
-        returns (uint256)
-    {
+    function getUserReferralCountPerLevel(
+        address user,
+        uint256 level
+    ) external view returns (uint256) {
         return userReferralCountPerLevel[user][level];
     }
 
-    function getReferralInvestment(address referrer, address referral)
-        external
-        view
-        returns (bool)
-    {
+    function getReferralInvestment(
+        address referrer,
+        address referral
+    ) external view returns (bool) {
         return referralIsInvestor[referrer][referral];
     }
 
@@ -276,55 +299,55 @@ contract ICO is Ownable {
         return referrerOf[user];
     }
 
-    function adminUpdateGeneralData(
-        uint256 _startTime,
-        uint256 _endTime,
-        uint256 _totalTokensSold,
-        uint256 _totalTokensSoldWithoutBonus,
-        uint256 _totalUsdtRaised,
-        uint256 _totalUsdtRaisedRemaining,
-        uint256 _totalUsdtPaidToSponsors
-    ) public onlyOwner {
-        startTime = _startTime;
-        endTime = _endTime;
-        totalTokensSold = _totalTokensSold;
-        totalTokensSoldWithoutBonus = _totalTokensSoldWithoutBonus;
-        totalUsdtRaised = _totalUsdtRaised;
-        totalUsdtRaisedRemaining = _totalUsdtRaisedRemaining;
-        totalUsdtPaidToSponsors = _totalUsdtPaidToSponsors;
-    }
-
-
-
     function setUserUsdtSpent(address user, uint256 amount) public onlyOwner {
         userUsdtSpent[user] = amount;
     }
 
-    function setUserTokensPurchased(address user, uint256 amount) public onlyOwner {
+    function setUserTokensPurchased(
+        address user,
+        uint256 amount
+    ) public onlyOwner {
         userTokensPurchased[user] = amount;
     }
 
-    function setUserTokensPurchasedWithoutBonus(address user, uint256 amount) public onlyOwner {
-        userTokensPurchasedWithoutBonus[user] = amount;
-    }
-
-    function setUserAmountUsdtPerLevel(address user, uint256 level, uint256 amount) public onlyOwner {
+    function setUserAmountUsdtPerLevel(
+        address user,
+        uint256 level,
+        uint256 amount
+    ) public onlyOwner {
         userAmountUsdtPerLevel[user][level] = amount;
     }
 
-    function setUserAmountUsdtPerLevelPerWallet(address user, uint256 level, address wallet, uint256 amount) public onlyOwner {
+    function setUserAmountUsdtPerLevelPerWallet(
+        address user,
+        uint256 level,
+        address wallet,
+        uint256 amount
+    ) public onlyOwner {
         userAmountUsdtPerLevelPerWallet[user][level][wallet] = amount;
     }
 
-    function addUserReferralPerLevel(address user, uint256 level, address referral) public onlyOwner {
+    function addUserReferralPerLevel(
+        address user,
+        uint256 level,
+        address referral
+    ) public onlyOwner {
         userReferralsPerLevel[user][level].push(referral);
     }
 
-    function setUserReferralCountPerLevel(address user, uint256 level, uint256 count) public onlyOwner {
+    function setUserReferralCountPerLevel(
+        address user,
+        uint256 level,
+        uint256 count
+    ) public onlyOwner {
         userReferralCountPerLevel[user][level] = count;
     }
 
-    function setReferralIsInvestor(address user, address referral, bool isInvestor) public onlyOwner {
+    function setReferralIsInvestor(
+        address user,
+        address referral,
+        bool isInvestor
+    ) public onlyOwner {
         referralIsInvestor[user][referral] = isInvestor;
     }
 
@@ -332,5 +355,11 @@ contract ICO is Ownable {
         referrerOf[user] = referrer;
     }
 
- 
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
 }

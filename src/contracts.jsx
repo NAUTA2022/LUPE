@@ -6,8 +6,8 @@ import { icoABI } from "./abis/ico";
 const chain = defineChain(137)
 
 
-export const USDTAddress = "0xc2132d05d31c914a87c6611c10748aeb04b58e8f";
-export const IcoAddress = "0x885d8D19C5359002EC1CB8171bEF02c948096ECA"; //0xE6749a56BB04bca7F9537CDE108A3160f17676Ee
+export const USDTAddress = "0x6a0db1AB91c42611A587d06aF8167da7D85B6496"; //0xc2132d05d31c914a87c6611c10748aeb04b58e8f
+export const IcoAddress = "0x2E49Ff2380a15Fd1640E19348D043Aa81949BeCD"; 
 
 
 export const ICO = getContract({
