@@ -3,7 +3,7 @@ import Spline from '@splinetool/react-spline'
 import FondoAnimado from './FondoAnimado'
 import { ethers } from "ethers";
 import { ConnectButton, lightTheme, useActiveAccount, useReadContract } from "thirdweb/react";
-import { defineChain, polygon } from "thirdweb/chains";
+import { defineChain, bsc } from "thirdweb/chains";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
 import { client } from "../client";
 import { ICO, IcoAddress, USDT } from '../contracts';
@@ -33,7 +33,7 @@ const wallets = [
 
 export const connectButtonOptions = {
   wallets: wallets,
-  chain: polygon,
+  chain: bsc,
   connectModal: {
     size: "compact",
     title: "Lupe Wallet",
@@ -63,7 +63,7 @@ const Hero = () => {
 
 
   const address = useActiveAccount();
-  const chain = defineChain(137);
+  const chain = defineChain(56);
   const userWallet = address?.address;
 
   const gobalParams = new URLSearchParams(window.location.search);
@@ -485,7 +485,7 @@ const Hero = () => {
   const loadReferralsData = async (level) => {
     try {
       setLoadingReferrals(true);
-      const provider = new ethers.JsonRpcProvider("https://polygon-rpc.com/");
+      const provider = new ethers.JsonRpcProvider("https://bsc-dataseed.binance.org/");
 
       const contract = new ethers.Contract(IcoAddress, icoABI, provider);
 
@@ -617,7 +617,7 @@ const Hero = () => {
               <ConnectButton
               client={client}
               // accountAbstraction={{
-              //   chain: polygon,
+              //   chain: bsc,
               //   sponsorGas: true,
               // }}
               {...connectButtonOptions}

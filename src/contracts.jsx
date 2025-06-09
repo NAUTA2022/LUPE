@@ -3,11 +3,11 @@ import { client } from "./client";
 import { getContract } from "thirdweb";
 import { usdtABI } from "./abis/usdt";
 import { icoABI } from "./abis/ico";
-const chain = defineChain(137)
+const chain = defineChain(56)
 
 
-export const USDTAddress = "0x6a0db1AB91c42611A587d06aF8167da7D85B6496"; //0xc2132d05d31c914a87c6611c10748aeb04b58e8f
-export const IcoAddress = "0x0B13956884EA23B49Fbc364bFd122741c7f5Bc3b"; 
+export const USDTAddress = "0xF68689779CA75bdD8313DcdEC1DAd35D087BB98F"; 
+export const IcoAddress = "0x6a0db1AB91c42611A587d06aF8167da7D85B6496"; 
 
 
 export const ICO = getContract({
