@@ -582,7 +582,7 @@ const Hero = () => {
                                 />
                             </div>
                             {/* Modelo 3D de fondo */}
-                            <div style={{
+                            {/* <div style={{
                                 position: 'absolute',
                                 top: 0,
                                 left: 0,
@@ -603,7 +603,7 @@ const Hero = () => {
                                         console.error('Spline error:', error);
                                     }}
                                 />
-                            </div>
+                            </div> */}
 
                         </div>
                     </div>
@@ -706,7 +706,7 @@ const Hero = () => {
                             ${totalPayedSponsors}
                             <br />
                             Total USDT paid in referrals:
-                            Total USDT Raised: ${Number(String(usdtRaised).replace(/,/g, ""))} / 200,000
+                            Total USDT Raised: ${Number(String(usdtRaised).replace(/,/g, ""))} / 30.900.000
                             <div style={{
                                 position: 'relative',
                                 height: '30px',
@@ -717,7 +717,7 @@ const Hero = () => {
                                 {console.log(Number(usdtRaised.replace(/,/g, '')))}
                                 <div style={{
                                     height: '100%',
-                                    width: `${Math.min((Number(totalUsdtRaised) / 200000000000) * 100, 100)}%`, // 200000 con 6 decimales
+                                    width: `${Math.min((Number(totalUsdtRaised) / 30900000000000) * 100, 100)}%`, // 200000 con 6 decimales
                                     background: 'linear-gradient(to right, #00c6ff, #0072ff)',
                                     transition: 'width 1s ease-in-out',
                                     display: 'flex',

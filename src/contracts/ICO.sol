@@ -1,12 +1,17 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
 
-contract ICO is Ownable, Pausable {
+contract ICOLupeUpgradeable is
+    OwnableUpgradeable,
+    PausableUpgradeable,
+    UUPSUpgradeable
+{
     IERC20 public usdt;
 
     uint256 public constant TOTAL_TOKENS_FOR_SALE = 150_000_000 * 1e18;
@@ -37,7 +42,6 @@ contract ICO is Ownable, Pausable {
         address indexed referrer,
         uint256 time
     );
-
     event ReferralRewardPaid(
         address indexed referrer,
         address indexed buyer,
@@ -45,22 +49,27 @@ contract ICO is Ownable, Pausable {
         uint256 reward,
         uint256 time
     );
-
     event ReferrerAssigned(
         address indexed user,
         address indexed referrer,
         uint256 time
     );
-
     event RemainingBalanceTransferred(
         address indexed owner,
         uint256 amount,
         uint256 time
     );
 
-    constructor(address _usdt) Ownable(msg.sender) {
+    function initialize(address _usdt) public initializer {
+        __Ownable_init(msg.sender);
+        __Pausable_init();
+        __UUPSUpgradeable_init();
         usdt = IERC20(_usdt);
     }
+
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {}
 
     function buyTokens(
         uint256 usdtAmount,
@@ -69,7 +78,6 @@ contract ICO is Ownable, Pausable {
         require(usdtAmount >= MIN_PURCHASE, "Minimum 100 USDT");
         require(referrer != msg.sender, "You cannot refer yourself");
 
-        // Asignación de referido (una única vez)
         if (
             userUsdtSpent[msg.sender] == 0 &&
             referrerOf[msg.sender] == address(0) &&
@@ -90,7 +98,6 @@ contract ICO is Ownable, Pausable {
         uint256 tokensToReceive = 0;
         uint256 sold = totalTokensSold;
 
-        // Configuración de los tramos de precio
         uint256[7] memory trancheLimits = [
             uint256(10_000_000),
             uint256(15_000_000),
@@ -102,13 +109,13 @@ contract ICO is Ownable, Pausable {
         ];
 
         uint256[7] memory tranchePrices = [
-            uint256(100_000), // 0.10 USDT con 6 decimales
-            uint256(120_000), // 0.12
-            uint256(150_000), // 0.15
-            uint256(180_000), // 0.18
-            uint256(220_000), // 0.22
-            uint256(260_000), // 0.26
-            uint256(300_000) // 0.30
+            uint256(100_000),
+            uint256(120_000),
+            uint256(150_000),
+            uint256(180_000),
+            uint256(220_000),
+            uint256(260_000),
+            uint256(300_000)
         ];
 
         uint256 trancheSold = sold;
@@ -119,26 +126,17 @@ contract ICO is Ownable, Pausable {
             i++
         ) {
             uint256 trancheCap = trancheLimits[i] * 1e18;
-
-            // Si ya se vendió todo este tramo, restamos y pasamos al siguiente
             if (trancheSold >= trancheCap) {
                 trancheSold -= trancheCap;
                 continue;
             }
 
-            // Cuántos tokens quedan disponibles en este tramo
             uint256 tokensLeftInTranche = trancheCap - trancheSold;
             uint256 price = tranchePrices[i];
-
-            // Máxima cantidad de tokens que el usuario puede comprar con lo que le queda de USDT
             uint256 maxTokensInThisTranche = (remainingUsdt * 1e18) / price;
-
-            // Tomamos la cantidad menor entre lo que puede comprar y lo que queda en el tramo
             uint256 tokensToBuy = maxTokensInThisTranche < tokensLeftInTranche
                 ? maxTokensInThisTranche
                 : tokensLeftInTranche;
-
-            // Cuánto cuesta en USDT esos tokens
             uint256 cost = (tokensToBuy * price) / 1e18;
 
             tokensToReceive += tokensToBuy;
@@ -171,16 +169,12 @@ contract ICO is Ownable, Pausable {
         uint256 usdtAmount
     ) internal {
         address currentReferrer = referrerOf[buyer];
-
         uint256[8] memory rewardPercents = [uint256(10), 3, 2, 1, 1, 1, 1, 1];
 
         for (uint256 level = 0; level < 8; level++) {
-            if (currentReferrer == address(0)) {
-                break;
-            }
+            if (currentReferrer == address(0)) break;
 
-            uint256 percent = rewardPercents[level];
-            uint256 reward = (usdtAmount * percent) / 100;
+            uint256 reward = (usdtAmount * rewardPercents[level]) / 100;
 
             if (reward > 0) {
                 usdt.transfer(currentReferrer, reward);
@@ -228,18 +222,12 @@ contract ICO is Ownable, Pausable {
         uint256 sold = totalTokensSold;
 
         if (sold < 10_000_000 * 1e18) return 100_000;
-        // 0.10 USDT con 6 decimales
         else if (sold < 25_000_000 * 1e18) return 120_000;
-        // 0.12
         else if (sold < 45_000_000 * 1e18) return 150_000;
-        // 0.15
         else if (sold < 70_000_000 * 1e18) return 180_000;
-        // 0.18
         else if (sold < 100_000_000 * 1e18) return 220_000;
-        // 0.22
         else if (sold < 125_000_000 * 1e18) return 260_000;
-        // 0.26
-        else return 300_000; // 0.30
+        else return 300_000;
     }
 
     function getUserUsdtSpent(address user) external view returns (uint256) {
@@ -266,7 +254,6 @@ contract ICO is Ownable, Pausable {
     ) external view returns (uint256[] memory amounts) {
         uint256 length = referrals.length;
         amounts = new uint256[](length);
-
         for (uint256 i = 0; i < length; i++) {
             amounts[i] = userAmountUsdtPerLevelPerWallet[user][level][
                 referrals[i]

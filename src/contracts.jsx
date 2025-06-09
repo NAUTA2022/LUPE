@@ -7,7 +7,7 @@ const chain = defineChain(137)
 
 
 export const USDTAddress = "0x6a0db1AB91c42611A587d06aF8167da7D85B6496"; //0xc2132d05d31c914a87c6611c10748aeb04b58e8f
-export const IcoAddress = "0x2E49Ff2380a15Fd1640E19348D043Aa81949BeCD"; 
+export const IcoAddress = "0x0B13956884EA23B49Fbc364bFd122741c7f5Bc3b"; 
 
 
 export const ICO = getContract({
