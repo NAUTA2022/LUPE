@@ -530,27 +530,6 @@ const Hero = () => {
             <ToastContainer />
             <FondoAnimado />
 
-            {/* Iluminación naranja difuminada superior */}
-            <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: 'radial-gradient(circle at 0% 0%, rgba(255, 165, 0, 0.1) 0%, transparent 70%)',
-                zIndex: 0
-            }} />
-            {/* Iluminación naranja difuminada inferior - más sutil */}
-            <div style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: 'radial-gradient(circle at 0% 100%, rgba(255, 165, 0, 0.05) 0%, transparent 50%)',
-                zIndex: 0
-            }} />
-
             <div className="container-fluid bg-transparent" style={{ position: 'relative', zIndex: 1 }}>
                 <div className="row align-items-center justify-content-center px-4 mx-auto bg-transparent" style={{ maxWidth: '1600px' }}>
                     <div className="col-md-6 col-lg-5 bg-transparent order-md-2">
@@ -562,48 +541,25 @@ const Hero = () => {
                             position: 'relative'
                         }}>
                             {/* Imagen para móvil */}
-                            <div className="d-md-none" style={{
+                            <div style={{
                                 width: '100%',
                                 height: '100%',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center'
+                                justifyContent: 'center',
+                                overflow: 'hidden'
                             }}>
-
                                 <img
-                                    src="/assets/Elon.png"
-                                    alt="Elon"
+                                    src="/assets/untitled.gif"
+                                    alt="Animación"
                                     style={{
-                                        width: 'auto',
+                                        width: '100%',
                                         height: '100%',
-                                        maxWidth: '100%',
-                                        objectFit: 'contain'
+                                        objectFit: 'cover',
+                                        objectPosition: 'center'
                                     }}
                                 />
                             </div>
-                            {/* Modelo 3D de fondo */}
-                            {/* <div style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                height: '100%',
-                                zIndex: -1
-                            }}>
-                                <Spline
-                                    scene="https://prod.spline.design/m5E2hkQzMPP2QApM/scene.splinecode"
-                                    style={{
-                                        width: '100%',
-                                        height: '100%'
-                                    }}
-                                    onLoad={(spline) => {
-                                        console.log('Spline loaded successfully');
-                                    }}
-                                    onError={(error) => {
-                                        console.error('Spline error:', error);
-                                    }}
-                                />
-                            </div> */}
 
                         </div>
                     </div>
